@@ -47,4 +47,7 @@
 			 pip install -r requirements.txt
  
 ## Week 2
- * We will review machine learning code for identifying types of flowers. 
+ * Today we had a presentation about the Neural Network Program. I don't have much data to put in here now, but eventuall this section will contain some key ideas. 
+ 
+## Week 3 Jan 31 2018
+ * We will be creating a Perceptron 
