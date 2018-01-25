@@ -14,6 +14,7 @@
  * [Website](https://www.stuorg.iastate.edu/site/pythondev) (Will be updated as the semester progresses) 
  * [Neural Network in 11 Lines](https://iamtrask.github.io/2015/07/12/basic-python-network/)
  * [Iris Dataset](https://archive.ics.uci.edu/ml/machine-learning-databases/iris/iris.data)
+ * [Perceptrons for Dummies](https://www.jilp.org/cbp/Daniel-slides.PDF)
  
 ### Create A Virtual Env on Mac
 * Install pip  
