@@ -33,4 +33,4 @@ Its fairly simple, bascially, for every group of input and output...
 	
 	Here $C_N'$ is the newly updated $C_n$, $E$ is the error, $I_n$ is the input for that variable, and $L$ is the **learning rate**. 
 	
-	This part might be a little confusing, so lets break it down 
+	This part might be a little confusing, so lets break it down. We want to compute the change in the weight, so what things are important here? Well the error definitly is, if we were correct, we dont need to change at all, but if we were wrong 
