@@ -33,4 +33,8 @@ Its fairly simple, bascially, for every group of input and output...
 	
 	Here $C_N'$ is the newly updated $C_n$, $E$ is the error, $I_n$ is the input for that variable, and $L$ is the **learning rate**. 
 	
-	This part might be a little confusing, so lets break it down. We want to compute the change in the weight, so what things are important here? Well the error definitly is, if we were correct, we dont need to change at all, but if we were wrong 
+	This part might be a little confusing, so lets break it down. We want to compute the change in the weight, so what things are important here? Well the error definitly is, if we were correct, we dont need to change at all, but if we were wrong, we want to add to our current weights. 
+	
+	###### what do we want to add?
+	
+	Ok well we know it has to be related to the error. If the error is negative, we want to make out weights smaller (getting us a smaller number next time), and if the error was positive we want to make our weights bigger (getting us a larger number next time). We also want to change more for larger errors than for smaller errors. So if make our change a function of the error, this will work

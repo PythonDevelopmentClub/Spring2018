@@ -2,7 +2,7 @@
 # also for randomly zeroing weights during runtime
 import random, math
 
-random.seed(1)
+
 
 
 
@@ -73,7 +73,7 @@ class Neural_Network(object):
 			self.layers[i] = self.dot_with_func(self.layers[i-1], self.weights[i-1], lambda x: self.sigmoid(x,False))
 
 			# set bias values
-			# self.layers[i][0] = 1
+			self.layers[i][0] = 1
 		self.layers[-1] = self.dot_with_func(self.layers[-2], self.weights[-1], lambda x: self.sigmoid(x,False))
 		return self.layers[-1]
 
@@ -103,8 +103,7 @@ class Neural_Network(object):
 		change[-1] = [error[-1][i]*self.sigmoid(self.layers[-1][i],True) for i in range(len(error[-1]))]
 
 		# #print the error
-		# print "error is:", "{0:.5f}".format(abs(sum(error[-1])))
-
+		print "error is: " "{0:.5f}".format(abs(sum(error[-1])))
 
 		# backpropigate
 		for n in range(len(self.layers)-2, -1, -1):
@@ -124,16 +123,10 @@ class Neural_Network(object):
 					self.weights[i][r][c] += self.layers[i][r]*change[i+1][c]
 					# if(random.random() < 0.000001):
 					# 	self.weights[i][r][c] = 0
-			print i
-			print "weights are: ", self.weights[i]
-			print "layers are: ", self.layers[i]
-			print "change is: ", change[i+1]
-			print "error is: ", error[i]
+
 		# for errornum in error:
 		# 	#print errornum,"\n"
-		print 2
-		print "layers are: ", self.layers[2]
-		print "error is: ", error[2]
+
 
 		return error
 
