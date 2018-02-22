@@ -1,6 +1,6 @@
 # for random intializatin of weights
 # also for randomly zeroing weights during runtime
-import random, math
+import random, math, urllib2
 
 random.seed(1)
 
@@ -157,6 +157,29 @@ class Neural_Network(object):
 					self.weights[weight_layer-1] += [[float(x) for x in line.split(" ")]]
 
 
+	def learn_from_url(self, link, classifiers, iterations=100):
+		f = urllib2.urlopen(link).read()
+		inputs = []
+		outputs = []
+		for line in f.split("\n"):
+			numbers = [float(i) for i in line.split(",")]
+			current_in = []
+			current_out = []
+			for x in range(len(classifiers)):
+				if classifiers[x] == "i":
+					current_in += [numbers[x]]
+				if classifiers[x] == "o":
+					current_out += [numbers[x]]
+			inputs += [current_in]
+			outputs += [current_out]
+
+		
+		for i in range(iterations):
+			if i%100 == 0:
+				print i
+			for j in range(len(inputs)):
+				self.train(inputs[j], outputs[j])
+
 	def learn_from_file(self, file_name, classifiers, iterations=100):
 		f = open(file_name)
 		inputs = []
@@ -181,6 +204,28 @@ class Neural_Network(object):
 				print i
 			for j in range(len(inputs)):
 				self.train(inputs[j], outputs[j])
+
+
+	def validate_from_url(self, link, classifiers):
+		f = urllib2.urlopen(link).read()
+		inputs = []
+		outputs = []
+		for line in f.split("\n"):
+			numbers = [float(i) for i in line.split(",")]
+			current_in = []
+			current_out = []
+			for x in range(len(classifiers)):
+				if classifiers[x] == "i":
+					current_in += [numbers[x]]
+				if classifiers[x] == "o":
+					current_out += [numbers[x]]
+			inputs += [current_in]
+			outputs += [current_out]
+		# print inputs
+		# print outputs
+
+		for j in range(len(inputs)):
+			print "network calculated ", self.get_output(inputs[j]), " correct answer was ", outputs[j]
 
 	def validate_from_file(self, file_name, classifiers):
 			f = open(file_name)
