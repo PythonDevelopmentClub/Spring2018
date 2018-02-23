@@ -1,6 +1,6 @@
 # for random intializatin of weights
 # also for randomly zeroing weights during runtime
-import random, math, urllib2
+import random, math, urllib2, json
 
 random.seed(1)
 
@@ -25,7 +25,7 @@ class Neural_Network(object):
 		# get the output of something its never seen
 		#print my_NN.get_output([1,1])
 	"""
-	def __init__(self, num_neurons_per_layer_):
+	def __init__(self, num_neurons_per_layer_, name="default_name"):
 		# the number of layers in the neural network
 		self.layer_count = len(num_neurons_per_layer_)
 
@@ -40,6 +40,8 @@ class Neural_Network(object):
 			#print "failed loading past weights, creating new ones..."
 			for i in range(0, len(num_neurons_per_layer_)-1):
 				self.weights += [[     [random.uniform(-1,1) for x in range(num_neurons_per_layer_[i+1])]     for j in range(0,num_neurons_per_layer_[i])]]
+
+			self.name = name
 
 
 	# sigmoid function, used as the activation function of the network
@@ -124,37 +126,31 @@ class Neural_Network(object):
 					self.weights[i][r][c] += self.layers[i][r]*change[i+1][c]
 					# if(random.random() < 0.000001):
 					# 	self.weights[i][r][c] = 0
-			print i
-			print "weights are: ", self.weights[i]
-			print "layers are: ", self.layers[i]
-			print "change is: ", change[i+1]
-			print "error is: ", error[i]
+			# print i
+			# print "weights are: ", self.weights[i]
+			# print "layers are: ", self.layers[i]
+			# print "change is: ", change[i+1]
+			# print "error is: ", error[i]
 		# for errornum in error:
 		# 	#print errornum,"\n"
-		print 2
-		print "layers are: ", self.layers[2]
-		print "error is: ", error[2]
+		# print 2
+		# print "layers are: ", self.layers[2]
+		# print "error is: ", error[2]
 
 		return error
 
 	# save the current weights to a series of files
 	# PUBLIC feel free to call this one
 	def save_data(self):
-		num = 0
-		for weight_layer in self.weights:
-			num+=1
-			with open("weight" + str(num) + ".txt", "w") as output_file:
-				for weight in weight_layer:
-					output_file.write(str(weight).replace("[","").replace("]","").replace(",","")+"\n")
+		with open(self.name + "_weights.json", "w") as f:
+			json.dump(self.weights, f)
+
 
 	# reads in the weights from files in the current directory
 	# PUBLIC feel free to call this one
 	def read_data(self):
-		for weight_layer in range(1, self.layer_count):
-			with open("weight" + str(weight_layer) + ".txt", "r") as output_file:
-				self.weights += [[]]
-				for line in output_file:
-					self.weights[weight_layer-1] += [[float(x) for x in line.split(" ")]]
+		with open(self.name + "_weights.json", "r") as f:
+			self.weights = json.load(f)
 
 
 	def learn_from_url(self, link, classifiers, iterations=100):
