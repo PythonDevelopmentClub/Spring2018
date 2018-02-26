@@ -41,7 +41,7 @@ class Neural_Network(object):
 			for i in range(0, len(num_neurons_per_layer_)-1):
 				self.weights += [[     [random.uniform(-1,1) for x in range(num_neurons_per_layer_[i+1])]     for j in range(0,num_neurons_per_layer_[i])]]
 
-			self.name = name
+		self.name = name
 
 
 	# sigmoid function, used as the activation function of the network
