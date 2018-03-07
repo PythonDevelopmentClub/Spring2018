@@ -1,13 +1,14 @@
 from better_neural_network import Neural_Network
 
-# myNN = Neural_Network([4, 8, 4, 1])
+myNN = Neural_Network([4, 8, 4, 1], "sam")
 
-# myNN.learn_from_file("normalized_data.txt", ["i","i","i","i","o"], 500)
+myNN.learn_from_url("https://raw.githubusercontent.com/PythonDevelopmentClub/Spring2018/master/Neural_Network/normalized_data.txt", ["i","i","i","i","o"], 100)
 
-# print myNN.validate_from_file("validation_data.txt", ["i","i","i","i","o"])
+myNN.save_data()
 
-myNN = Neural_Network([2, 2, 1])
+myNN2 = Neural_Network([4, 8, 4, 1], "sam")
 
-myNN.train([1,1], [0])
+myNN2.read_data()
 
-# print myNN.sigmoid(0.551072636233645, True)
+
+print myNN2.validate_from_url("https://raw.githubusercontent.com/PythonDevelopmentClub/Spring2018/master/Neural_Network/validation_data.txt", ["i","i","i","i","o"])
