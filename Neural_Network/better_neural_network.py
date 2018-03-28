@@ -25,11 +25,16 @@ class Neural_Network(object):
 		#print my_NN.get_output([1,1])
 	"""
 	def __init__(self, num_neurons_per_layer_, name="default_name"):
-		# the number of layers in the neural network
+		# the number of layers in the neural network. i.e. the length of the list supplied as argument 1
+		# Neural_Network([2, 3, 2, 1]) would be layer_count 4
 		self.layer_count = len(num_neurons_per_layer_)
 
-		# the layers themselves
+		# This initializes all the layers to 0 such that
+		# a network declared with the following would have these layers: 
+		# myNN = Neural_Network([4, 8, 4, 1], "sam")
+		# [[0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0], [0]]
 		self.layers = [[0]*layer_len for layer_len in num_neurons_per_layer_]
+		# print [[0]*layer_len for layer_len in num_neurons_per_layer_]
 
 		# initialize the weights of the neural network, try to read in the weights, and if they are there great, if not, make new ones
 		self.weights = []
@@ -37,9 +42,52 @@ class Neural_Network(object):
 			self.read_data()
 		except:
 			#print "failed loading past weights, creating new ones..."
-			for i in range(0, len(num_neurons_per_layer_)-1):
-				self.weights += [[     [random.uniform(-1,1) for x in range(num_neurons_per_layer_[i+1])]     for j in range(0,num_neurons_per_layer_[i])]]
+			# An example of weights would be as follows for network myNN = Neural_Network([4, 8, 4, 1], "sam"): 
+			# Notice the output layer does not need any weights going from it, but the layer connecting to the output layer does. 
+			 # Also, each layer has enough weights to connect to all nodes in the next layer
+			# [
+			# 	[
+			# 		[-0.7312715117751976, 0.6948674738744653, 0.5275492379532281, -0.4898619485211566, -0.009129825816118098, -0.10101787042252375, 0.3031859454455259, 0.5774467022710263]
+			# 		, 
+			# 		[-0.8122808264515302, -0.9433050469559874, 0.6715302078397394, -0.13446586418989326, 0.524560164915884, -0.9957878932977786, -0.10922561189039715, 0.44308006468156513]
+			# 		, 
+			# 		[-0.5424755574590947, 0.8905413911078446, 0.8028549152229671, -0.9388200339328929, -0.9491082780130784, 0.08282494558699316, 0.8782983255570211, -0.23759152462357513]
+			# 		,
+			# 		[-0.5668012057387732, -0.15576684883456537, -0.9419184248502641, -0.5566166674539299, -0.12422481269885588, -0.008375517236298702, -0.5338310994848547, -0.5382669169180314]
 
+			# 	]
+			# 	, 
+			# 	[
+			# 		[-0.5624379253246228, -0.08079306852453283, -0.42043677081902886, -0.9570205894681822]
+			# 		, 
+			# 		[0.6751559513251457, 0.11290864530486688, 0.28458872586489115, -0.6281874682105646]
+			# 		,
+			# 		[0.9850868243521302, 0.7198930575905798, -0.7582200803883872, -0.3346096292797418]
+			# 		, 
+			# 		[0.44296881516653674, 0.4223835393905593, 0.8728811735989193, -0.15578600007716958]
+			# 		, 
+			# 		[0.660071386548654, 0.34061113282814204, -0.3932629781341648, 0.1751612122871189]
+			# 		, 
+			# 		[0.7649580016637154, 0.6923948368566255, 0.010567641159200836, 0.17800451596510336]
+			# 		, 
+			# 		[-0.9309483396973168, -0.5145200529138647, 0.5948084951086057, -0.17137200139845143]
+			# 		, 
+			# 		[-0.6539851968418982, 0.09759752277630596, 0.40608152413126297, 0.3489716610046545]
+			# 	]
+			# 	, 
+			# 	[
+			# 		[-0.25059395899671943]
+			# 		, 
+			# 		[-0.12207673991087375]
+			# 		, 
+			# 		[0.016852976499963646]
+			# 		, 
+			# 		[0.5568852300002916]
+			# 	]
+			# ]
+			for i in range(0, len(num_neurons_per_layer_)-1):
+				self.weights += [[     [   random.uniform(-1,1) for x in range(num_neurons_per_layer_[i+1])  ]     for j in range(0,num_neurons_per_layer_[i])    ]]
+			
 		self.name = name
 
 
@@ -55,11 +103,19 @@ class Neural_Network(object):
 
 	# computes the dot product of x and y, calling the provided function on every number in the resulting matrix
 	# PRIVATE dont mess with this, you should never need to call it
+	# import numpy
+	# result = numpy.dot( numpy.array(A)[:,0], B)
 	def dot_with_func(self, x, y, func):
 		new = []
 		for c in range(0,len(y[0])):
-			new += [func(sum([x[r]*y[r][c] for r in range(0, len(y))]))]
+			new += [func(sum([x[r]*y[r][c] for r in range(0, len(y))])
+						)
+					]
 		return new
+		# new = []
+		# for r in range(len(x)): 
+		# 	new += [func(sum([x[r]*y[r][c] for c in range(0, len(y[0]))]))]
+		# return new
 
 	# gets the output of the network given the input
 	# does NOT backpropigate error OR learn from ANY mistakes
@@ -75,6 +131,7 @@ class Neural_Network(object):
 
 			# set bias values
 			# self.layers[i][0] = 1
+			# Negative list indexes mean count from the right, so self.layers[-1] is the last element aka the output layer
 		self.layers[-1] = self.dot_with_func(self.layers[-2], self.weights[-1], lambda x: self.sigmoid(x,False))
 		return self.layers[-1]
 
@@ -170,8 +227,8 @@ class Neural_Network(object):
 
 		
 		for i in range(iterations):
-			if i%100 == 0:
-				print i
+			# if i%100 == 0:
+			# 	print i
 			for j in range(len(inputs)):
 				self.train(inputs[j], outputs[j])
 
