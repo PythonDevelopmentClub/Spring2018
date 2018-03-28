@@ -1,0 +1,16 @@
+EC2 Instances PyDev
+
+Endpoint /train_nn 
+
+link (link to normalized data, store it on your personal github) 
+sizes [4,8,4,1]
+id, (Just some name)
+training_runs, 
+io = input output ("i", "i", "i", "i", "o"). i for input o for output
+
+
+
+Endpoint /run_nn
+
+id (Matching id)
+inputs [Matching i,o,i,o]

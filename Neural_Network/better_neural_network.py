@@ -6,7 +6,6 @@ random.seed(1)
 
 
 
-
 class Neural_Network(object):
 	""" Neural_Network
 		@author Devin Uner
