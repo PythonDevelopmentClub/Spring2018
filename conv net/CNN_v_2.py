@@ -88,7 +88,7 @@ class convolutional_layer():
 		self.output = output
 		return output
 
-	def generate_error(self, input_matrix, correct_output):
+	def generate_error(self, input_matrix, error_matrix):
 		"""
 		Ok so what do we know?
 			well we know that the correct output is going to be like [[[1]], [[0]], [[1]]... ], and so SHOULD the output  of this layer
@@ -101,28 +101,20 @@ class convolutional_layer():
 		make the error matrix, it should be the same size as the input matrix
 		"""
 
-		self.filter_all(input_matrix)
-		if len(self.output[0][0]) != 1:
-			raise ValueError("The network is not a final output layer, dont call this method on it, or change the parameters of this layer accordingly")
-
-		initial_error_matrix = [0 for i in range(len(correct_output))]
-		final_error_matrix = [[[0] for i in range(len(input_matrix[0][0])) for j in range(len(input_matrix[0]))] for k in range(len(input_matrix))]
-
-		for i in range(len(correct_output)):
-			initial_error_matrix[i] = correct_output[i] - self.output[i][0][0]
-
-		# print(initial_error_matrix)
-
-		# ok now loop back 
-
+		output = [[[0 for x in range(len(input_matrix[0])/self.step_size)] for y in range(len(input_matrix[0][0])/self.step_size)] for f in range(len(self.filters))]
+		
 		start_x = 0 if self.zpad else self.filter_radius
 		start_y = 0 if self.zpad else self.filter_radius
 
 		for f in range(len(self.filters)):
 			for x in range(start_x, len(input_matrix[0]), self.step_size):
 				for y in range(start_y, len(input_matrix[0][0]), self.step_size):
-					change = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), initial_error_matrix[f])
-					pass
+					# print f, x, y
+					# print len(output), len(output[0]), len(output[0][0]), len(output[0][0])
+					output[f][x/self.step_size][y/self.step_size] = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), error_matrix[f][x][y])
+		self.output = output
+		return output
+		
 
 
 
@@ -159,7 +151,6 @@ class max_pool(object):
 		input_z = len(input_matrix)
 
 		self.output = [[[0 for x in range(input_x / self.step_size)] for y in range(input_y / self.step_size)] for z in range(input_z)]
-		self.locations = [[[0 for x in range(input_x / self.step_size)] for y in range(input_y / self.step_size)] for z in range(input_z)]
 
 		for z in range(len(input_matrix)):
 			for x in range(self.step_size, len(input_matrix[0]), self.step_size):
@@ -169,8 +160,34 @@ class max_pool(object):
 						for dy in range(self.step_size*-1, self.step_size):
 							values_to_find_max += [input_matrix[z][x+dx][y+dy]]
 					self.output[z][x/self.step_size][y/self.step_size] = max(values_to_find_max)
-					self.locations[z][x/self.step_size][y/self.step_size] = values_to_find_max.index(max(values_to_find_max))
 		return self.output
+
+	def reverse_pool(self, input_matrix, error_matrix):
+		input_x = len(input_matrix[0])
+		input_y = len(input_matrix[0][0])
+		input_z = len(input_matrix)
+
+		new_error = output = [[[0 for x in range(input_x)] for y in range(input_y)] for z in range(input_z)]
+
+		for z in range(len(input_matrix)):
+			for x in range(self.step_size, len(input_matrix[0]), self.step_size):
+				for y in range(self.step_size, len(input_matrix[0][0]), self.step_size):
+					values_to_find_max = []
+					for dx in range(self.step_size*-1, self.step_size):
+						for dy in range(self.step_size*-1, self.step_size):
+							values_to_find_max += [input_matrix[z][x+dx][y+dy]]
+
+					# instead of the line below, we want to:
+					# find the x and y of the max element
+					# set the output at that x and y to that max element
+					# self.output[z][x/self.step_size][y/self.step_size] = max(values_to_find_max)
+
+					max_value_location = values_to_find_max.index(max(values_to_find_max))
+					max_value_y = max_value_location % y
+					max_value_x = max_value_location / x
+					new_error[z][max_value_x][max_value_y] = error_matrix[z][x/self.step_size][y/self.step_size]
+
+		return new_error
 
 class fully_connected_layer():
 	"""docstring for fully_connected_layer"""
