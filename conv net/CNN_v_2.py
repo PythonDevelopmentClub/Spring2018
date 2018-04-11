@@ -37,6 +37,9 @@ class filter():
 		# return sum(   [self.weights[z][x][y] * input_matrix[z][x][y] for x in range(len(input_matrix[0])) for y in range(len(input_matrix[0][0])) for z in range(len(input_matrix))]) OLD
 
 		fully_connected_input = threed_to_oned(input_matrix)
+		# print "---------------"
+		# print fully_connected_input
+		# print "---------------"
 		nn_output = self.nn.get_output(fully_connected_input)
 		return nn_output
 
@@ -84,7 +87,7 @@ class convolutional_layer():
 				for y in range(start_y, len(input_matrix[0][0]), self.step_size):
 					# print f, x, y
 					# print len(output), len(output[0]), len(output[0][0]), len(output[0][0])
-					output[f][x/self.step_size][y/self.step_size] = self.filters[f].accept_input(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius))
+					output[f][y/self.step_size][x/self.step_size] = self.filters[f].accept_input(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius))
 		self.output = output
 		return output
 
@@ -151,15 +154,16 @@ class max_pool(object):
 		input_z = len(input_matrix)
 
 		self.output = [[[0 for x in range(input_x / self.step_size)] for y in range(input_y / self.step_size)] for z in range(input_z)]
-
+		# pretty_print(input_matrix)
 		for z in range(len(input_matrix)):
 			for x in range(self.step_size, len(input_matrix[0]), self.step_size):
 				for y in range(self.step_size, len(input_matrix[0][0]), self.step_size):
 					values_to_find_max = []
 					for dx in range(self.step_size*-1, self.step_size):
 						for dy in range(self.step_size*-1, self.step_size):
-							values_to_find_max += [input_matrix[z][x+dx][y+dy]]
-					self.output[z][x/self.step_size][y/self.step_size] = max(values_to_find_max)
+							values_to_find_max += [input_matrix[z][y+dy][x+dx]]
+					# print values_to_find_max
+					self.output[z][y/self.step_size][x/self.step_size] = max(values_to_find_max)
 		return self.output
 
 	def reverse_pool(self, input_matrix, error_matrix):
@@ -212,7 +216,9 @@ layer_3 = convolutional_layer(num_filters=4, step_size=8, filter_radius=4, input
 
 layer_0_output = layer_0.output
 layer_1_output = layer_1.filter_all(layer_0_output)
+pretty_print(layer_0_output)
 layer_2_output = layer_2.pool(layer_1_output)
+# print layer_2_output
 layer_3_output = layer_3.filter_all(layer_2_output)
 
 e = layer_3.generate_error(layer_2_output, [1,1,0,0])
