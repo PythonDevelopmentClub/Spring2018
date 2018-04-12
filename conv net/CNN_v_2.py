@@ -10,7 +10,7 @@ def threed_to_oned(input_matrix):
 	return [input_matrix[k][r][c] for k in range(len(input_matrix)) for r in range(len(input_matrix[0])) for c in range(len(input_matrix[0][0]))]
 
 def oned_to_threed(input_matrix, x, y, z):
-	return [[[input_matrix[k][r][c] for k in range(x)] for r in range(y)] for c in range(z)]
+	return [[[input_matrix[k*x + r*y + c] for k in range(x)] for r in range(y)] for c in range(z)]
 
 
 
@@ -41,7 +41,7 @@ class filter():
 		# print fully_connected_input
 		# print "---------------"
 		nn_output = self.nn.get_output(fully_connected_input)
-		return nn_output
+		return nn_output[0]
 
 
 	def train(self, input_matrix, change_above):
@@ -50,7 +50,6 @@ class filter():
 		Its error is the change above it times the weights
 		Its change is its error times its values times 1 - its value
 		"""
-
 		return oned_to_threed(self.nn.backpropigate(change_above)[0], self.x, self.y, self.z)
 
 class convolutional_layer():
@@ -78,7 +77,6 @@ class convolutional_layer():
 
 	def filter_all(self, input_matrix):
 		output = [[[0 for x in range(len(input_matrix[0])/self.step_size)] for y in range(len(input_matrix[0][0])/self.step_size)] for f in range(len(self.filters))]
-		
 		start_x = 0 if self.zpad else self.filter_radius
 		start_y = 0 if self.zpad else self.filter_radius
 
@@ -112,9 +110,9 @@ class convolutional_layer():
 		for f in range(len(self.filters)):
 			for x in range(start_x, len(input_matrix[0]), self.step_size):
 				for y in range(start_y, len(input_matrix[0][0]), self.step_size):
-					# print f, x, y
-					# print len(output), len(output[0]), len(output[0][0]), len(output[0][0])
-					output[f][x/self.step_size][y/self.step_size] = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), error_matrix[f][x][y])
+					print "f, x, y: ", f, x/self.step_size, y/self.step_size
+					print "lengths: ", len(error_matrix), len(error_matrix[0]), len(error_matrix[0][0]), "\n----"
+					output[f][x/self.step_size][y/self.step_size] = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), [error_matrix[f][x/self.step_size][y/self.step_size]])
 		self.output = output
 		return output
 		
@@ -135,7 +133,7 @@ class image_input(object):
 def pretty_print(matrix):
 	for i in range(len(matrix)):
 		print "############### depth", i, "################", len(matrix[i]), "by", len(matrix[i][0])
-		for r in range(len(matrix[i][0])):
+		for r in range(len(matrix[i])):
 			for c in range(len(matrix[i][r])):
 				print ("%.2f" % matrix[i][r][c]).zfill(5),
 			print ""
@@ -206,6 +204,12 @@ class fully_connected_layer():
 		nn_output = self.nn.get_output(fully_connected_input)
 		self.output = nn_output
 		return nn_output
+
+	def get_error(self, input_matrix, correct_output):
+		output = self.get_output(input_matrix)
+		final_error = [correct_output[i] - output[i] for i in range(len(correct_output))]
+		return oned_to_threed(self.nn.backpropigate(final_error)[0], len(input_matrix), len(input_matrix[0]), len(input_matrix[0][0]))
+
 		
 
 
@@ -213,18 +217,18 @@ layer_0 = image_input("4.png")
 layer_1 = convolutional_layer(num_filters=2, step_size=2, filter_radius=1, input_z=3)
 layer_2 = max_pool(2)
 layer_3 = convolutional_layer(num_filters=4, step_size=8, filter_radius=4, input_z=2, zpad=False)
+layer_4 = fully_connected_layer([36, 2])
+
 
 layer_0_output = layer_0.output
 layer_1_output = layer_1.filter_all(layer_0_output)
-pretty_print(layer_0_output)
 layer_2_output = layer_2.pool(layer_1_output)
-# print layer_2_output
 layer_3_output = layer_3.filter_all(layer_2_output)
 
-e = layer_3.generate_error(layer_2_output, [1,1,0,0])
-# pretty_print(layer_0_output)
-# pretty_print(layer_1_output)
-# pretty_print(layer_2_output)
-# pretty_print(layer_3_output)
 
+e = layer_4.get_error(layer_3_output, [1,0])
+
+layer_3_error = layer_3.generate_error(layer_2_output, e)
+
+pretty_print(layer_3_error)
 		
