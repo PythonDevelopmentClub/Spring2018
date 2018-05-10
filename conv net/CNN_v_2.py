@@ -102,7 +102,7 @@ class convolutional_layer():
 		make the error matrix, it should be the same size as the input matrix
 		"""
 
-		output = [[[0 for x in range(len(input_matrix[0])/self.step_size)] for y in range(len(input_matrix[0][0])/self.step_size)] for f in range(len(self.filters))]
+		output = [[[0 for x in range(len(input_matrix[0][0]))] for y in range(len(input_matrix[0]))] for z in range(len(input_matrix))]
 		
 		start_x = 0 if self.zpad else self.filter_radius
 		start_y = 0 if self.zpad else self.filter_radius
@@ -110,11 +110,24 @@ class convolutional_layer():
 		for f in range(len(self.filters)):
 			for x in range(start_x, len(input_matrix[0]), self.step_size):
 				for y in range(start_y, len(input_matrix[0][0]), self.step_size):
-					print "f, x, y: ", f, x/self.step_size, y/self.step_size
-					print "lengths: ", len(error_matrix), len(error_matrix[0]), len(error_matrix[0][0]), "\n----"
-					output[f][x/self.step_size][y/self.step_size] = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), [error_matrix[f][x/self.step_size][y/self.step_size]])
+
+					filter_out = self.filters[f].train(self.filter_one(input_matrix, {"x": x, "y": y}, self.filter_radius), [error_matrix[f][x/self.step_size][y/self.step_size]])
+					for zz in range(len(filter_out)):
+						for yy in range(len(filter_out[0])):
+							for xx in range(len(filter_out[0][0])):
+								# print zz, xx + x, yy + y
+								# print len(output), len(output[0]), len(output[0][0])
+								if xx + x - self.filter_radius < len(output[0]) and yy + y - self.filter_radius < len(output[0][0]):
+									output[zz][xx + x - self.filter_radius][yy + y - self.filter_radius] += filter_out[zz][yy][xx]
+
+
 		self.output = output
 		return output
+
+		
+
+
+
 		
 
 
@@ -159,7 +172,8 @@ class max_pool(object):
 					values_to_find_max = []
 					for dx in range(self.step_size*-1, self.step_size):
 						for dy in range(self.step_size*-1, self.step_size):
-							values_to_find_max += [input_matrix[z][y+dy][x+dx]]
+							if y+dy < len(input_matrix[0]) and x+dx < len(input_matrix[0][0]):
+								values_to_find_max += [input_matrix[z][y+dy][x+dx]]
 					# print values_to_find_max
 					self.output[z][y/self.step_size][x/self.step_size] = max(values_to_find_max)
 		return self.output
@@ -208,27 +222,164 @@ class fully_connected_layer():
 	def get_error(self, input_matrix, correct_output):
 		output = self.get_output(input_matrix)
 		final_error = [correct_output[i] - output[i] for i in range(len(correct_output))]
-		return oned_to_threed(self.nn.backpropigate(final_error)[0], len(input_matrix), len(input_matrix[0]), len(input_matrix[0][0]))
+		return oned_to_threed(self.nn.backpropigate(final_error)[0], len(input_matrix[0][0]), len(input_matrix[0]), len(input_matrix))
 
 		
 
 
-layer_0 = image_input("4.png")
-layer_1 = convolutional_layer(num_filters=2, step_size=2, filter_radius=1, input_z=3)
+layer_0_1 = image_input("circle_1.png")
+layer_0_2 = image_input("circle_2.png")
+layer_0_3 = image_input("circle_3.png")
+layer_0_4 = image_input("other_1.png")
+layer_0_5 = image_input("other_2.png")
+layer_0_6 = image_input("other_7.png")
+
+layer_1 = convolutional_layer(num_filters=2, step_size=2, filter_radius=3, input_z=3)
 layer_2 = max_pool(2)
-layer_3 = convolutional_layer(num_filters=4, step_size=8, filter_radius=4, input_z=2, zpad=False)
+layer_3 = convolutional_layer(num_filters=4, step_size=8, filter_radius=5, input_z=2, zpad=False)
 layer_4 = fully_connected_layer([36, 2])
 
 
-layer_0_output = layer_0.output
-layer_1_output = layer_1.filter_all(layer_0_output)
-layer_2_output = layer_2.pool(layer_1_output)
-layer_3_output = layer_3.filter_all(layer_2_output)
+# layer_0_output = layer_0.output
+# layer_1_output = layer_1.filter_all(layer_0_output)
+# layer_2_output = layer_2.pool(layer_1_output)
+# layer_3_output = layer_3.filter_all(layer_2_output)
 
 
-e = layer_4.get_error(layer_3_output, [1,0])
+for i in range(100):
+	layer_0_output = layer_0_1.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+	e = layer_4.get_error(layer_3_output, [1,0])
+	layer_3_error = layer_3.generate_error(layer_2_output, e)
+	layer_2_error = layer_2.reverse_pool(layer_1_output, layer_3_error)
+	layer_1_error = layer_1.generate_error(layer_0_output, layer_2_error)
 
-layer_3_error = layer_3.generate_error(layer_2_output, e)
+	layer_0_output = layer_0_2.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+	e = layer_4.get_error(layer_3_output, [1,0])
+	layer_3_error = layer_3.generate_error(layer_2_output, e)
+	layer_2_error = layer_2.reverse_pool(layer_1_output, layer_3_error)
+	layer_1_error = layer_1.generate_error(layer_0_output, layer_2_error)
 
-pretty_print(layer_3_error)
+	layer_0_output = layer_0_3.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+
+	layer_0_output = layer_0_4.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+	e = layer_4.get_error(layer_3_output, [0,1])
+	layer_3_error = layer_3.generate_error(layer_2_output, e)
+	layer_2_error = layer_2.reverse_pool(layer_1_output, layer_3_error)
+	layer_1_error = layer_1.generate_error(layer_0_output, layer_2_error)
+
+	layer_0_output = layer_0_5.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+	e = layer_4.get_error(layer_3_output, [0,1])
+	layer_3_error = layer_3.generate_error(layer_2_output, e)
+	layer_2_error = layer_2.reverse_pool(layer_1_output, layer_3_error)
+	layer_1_error = layer_1.generate_error(layer_0_output, layer_2_error)
+
+	layer_0_output = layer_0_6.output
+	layer_1_output = layer_1.filter_all(layer_0_output)
+	layer_2_output = layer_2.pool(layer_1_output)
+	layer_3_output = layer_3.filter_all(layer_2_output)
+	print layer_4.get_output(layer_3_output)
+
+	print "---"
+
+
+
+# conv_layer_tester = convolutional_layer(num_filters = 2, step_size=3, filter_radius = 3, input_z=3, zpad=True)
+
+
+
+# input_a = [
+
+# [
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0]
+# ],
+
+# [
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0]
+# ],
+
+# [
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0],
+# [0,0,0,0,0,0,0,0,0,0,0,0]
+# ]
+
+
+
+# ]
+
+# error_matrix_a = [
+
+# [
+# [1,1,1,1],
+# [1,1,1,1],
+# [1,1,1,1],
+# [1,1,1,1]
+# ],
+
+# [
+# [1,1,1,1],
+# [1,1,1,1],
+# [1,1,1,1],
+# [1,1,1,1]
+# ]
+
+
+
+# ]
+
+# layer_output = conv_layer_tester.filter_all(input_a)
+# layer_error_output = conv_layer_tester.generate_error(input_a, error_matrix_a)
+
+# pretty_print(layer_error_output)
 		
