@@ -259,6 +259,7 @@ class Neural_Network(object):
 
 
 	def validate_from_url(self, link, classifiers):
+		total_errors = []
 		f = urllib2.urlopen(link).read()
 		inputs = []
 		outputs = []
@@ -278,6 +279,8 @@ class Neural_Network(object):
 
 		for j in range(len(inputs)):
 			print "network calculated ", self.get_output(inputs[j]), " correct answer was ", outputs[j]
+			total_errors += [sum(abs(outputs[j][a] - self.get_output(inputs[j][a])) for a in range(len(outputs[j])))]
+		return sum(total_errors) / len(total_errors)
 
 	def validate_from_file(self, file_name, classifiers):
 			f = open(file_name)

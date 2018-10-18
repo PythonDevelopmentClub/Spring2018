@@ -3,7 +3,7 @@
 import random, math, urllib2, json
 
 # random.seed(1)
-
+LEARNING_RATE = 0.01
 
 
 
@@ -25,7 +25,8 @@ class Neural_Network(object):
 		# get the output of something its never seen
 		#print my_NN.get_output([1,1])
 	"""
-	def __init__(self, num_neurons_per_layer_, name="default_name"):
+	def __init__(self, num_neurons_per_layer_, relu=False, name="default_name"):
+		self.relu=relu
 		# the number of layers in the neural network
 		self.layer_count = len(num_neurons_per_layer_)
 
@@ -39,7 +40,7 @@ class Neural_Network(object):
 		except:
 			#print "failed loading past weights, creating new ones..."
 			for i in range(0, len(num_neurons_per_layer_)-1):
-				self.weights += [[     [random.uniform(-1,1) for x in range(num_neurons_per_layer_[i+1])]     for j in range(0,num_neurons_per_layer_[i])]]
+				self.weights += [[     [random.gauss(0, 0.05) for x in range(num_neurons_per_layer_[i+1])]     for j in range(0,num_neurons_per_layer_[i])]]
 
 		self.name = name
 		self.last_error = []
@@ -50,9 +51,20 @@ class Neural_Network(object):
 	# default is to compute the value and not the dertivative
 	# PRIVATE dont mess with this, you should never need to call it
 	def sigmoid(self, x, deriv=False):
+		# if self.relu:
 		if(deriv):
-			return x*(1-x)
-		return 1/(1+ (math.e ** (-1*x)))
+			if x > 0:
+				return 1
+			else:
+				return 0.01
+		return max(0.01*x, x)
+		# if(deriv):
+		# 	return x*(1-x)
+		# return 1/(1+ (math.e ** (-1*x)))
+	def softmax(self, arr):
+		arr = [math.exp(i) for i in arr]
+		s = sum(arr)
+		return [i / s for i in arr]
 
 
 	# computes the dot product of x and y, calling the provided function on every number in the resulting matrix
@@ -75,10 +87,14 @@ class Neural_Network(object):
 			# calculate the next line of output
 			self.layers[i] = self.dot_with_func(self.layers[i-1], self.weights[i-1], lambda x: self.sigmoid(x,False))
 
+			# DROP OUT stuff goes here
+			# for x in range(len(self.layers[i])):
+			# 	if random.random() < 0.4:
+			# 		self.layers[i][x] = 0
 			# set bias values
 			# self.layers[i][0] = 1
-		self.layers[-1] = self.dot_with_func(self.layers[-2], self.weights[-1], lambda x: self.sigmoid(x,False))
-		return self.layers[-1]
+		self.layers[-1] = self.dot_with_func(self.layers[-2], self.weights[-1], lambda x: x)
+		return self.softmax(self.layers[-1])
 
 	# trains the network with the given input and output data
 	# returns the output
@@ -88,27 +104,26 @@ class Neural_Network(object):
 		y = self.get_output(input_data)
 		error = [output_data[i] - y[i] for i in range(len(y))]
 		error = self.backpropigate(error)
-		self.last_error = [i for i in error[0]]
-		return error[-1]
+		return error
 
 	# backpropigate the given final error
 	# this is how the network learns
 	# this is called from the train method, not from you
 	# PRIVATE dont mess with this, you should never need to call it
-	def backpropigate(self, final_error):
+	def backpropigate(self, final_error, print_me=False):
+		self.last_error = [i for i in final_error]
 		# initialize the change and error
 		error = [  [] for i in range(0, len(self.layers)) ]
 		change = [  [] for i in range(0, len(self.layers)) ]
 
-		
 
 		# calculate the final error and final change
 		error[-1] = final_error
 		change[-1] = [error[-1][i]*self.sigmoid(self.layers[-1][i],True) for i in range(len(error[-1]))]
-
+		# if print_me:
+		# 	print "changing by ", change[-1]
 		# #print the error
 		# print "error is:", "{0:.5f}".format(abs(sum(error[-1])))
-
 
 		# backpropigate
 		for n in range(len(self.layers)-2, -1, -1):
@@ -120,14 +135,16 @@ class Neural_Network(object):
 			# calculate the error and change
 			error[n] = self.dot_with_func(change[n+1], (new), lambda x: x)
 			change[n] = [error[n][i] * self.sigmoid(self.layers[n][i], True) for i in range(len(error[n]))]
-
 		# add the change to the weights
 		for i in range(0, len(self.weights)):
 			for r in range(len(self.weights[i])):
 				for c in range(len(self.weights[i][0])):
-					self.weights[i][r][c] += self.layers[i][r]*change[i+1][c]
-					# if(random.random() < 0.000001):
-					# 	self.weights[i][r][c] = 0
+					if(random.random() < 0.4 / len(self.layers[i])):
+						self.layers[i][r] = 0
+					self.weights[i][r][c] += self.layers[i][r]*change[i+1][c]*LEARNING_RATE
+					# if print_me:
+					# 	print "changing by: ", change[i+1][c]*self.layers[i][r]
+	
 			# print i
 			# print "weights are: ", self.weights[i]
 			# print "layers are: ", self.layers[i]
@@ -138,7 +155,7 @@ class Neural_Network(object):
 		# print 2
 		# print "layers are: ", self.layers[2]
 		# print "error is: ", error[2]
-
+		# print error[0]
 		return error
 
 	# save the current weights to a series of files
