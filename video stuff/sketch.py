@@ -8,7 +8,7 @@ import numpy
 with mss.mss() as sct:
     # Part of the screen to capture
 
-    monitor = sct.monitors[1]
+    monitor = sct.monitors[2]
     monitor = {"top": 40, "left": 0, "width": monitor["width"], "height": monitor["height"]}
 
     while "Screen capturing":

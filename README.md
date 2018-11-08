@@ -3,10 +3,9 @@
 
 ## Week 1
 ### Elections 
- * Webmaster - Adam Kiel 
  * Lead Developer - Devin Uner
  * Developer 1 - Connor Rust
- * Developer 2 - Michael Davis
+
 
 ### Important Links
  * [Slack Invitation](https://join.slack.com/t/pythondevelopmentclub/shared_invite/enQtMzAwNzQzMjkxNjA1LTljMjYyZmZhOTA4M2IzODk1MDIyYjM4MzJkMGMzZmVlNWQ5ZWZmMDUyZjJlMGVlNDk0NjhlMmVhMzc3MzA2OWE)
