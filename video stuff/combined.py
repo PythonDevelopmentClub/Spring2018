@@ -25,9 +25,11 @@ last_boxes = []
 
 if __name__ == '__main__':
 
+    
     hog = cv2.HOGDescriptor()
     hog.setSVMDetector( cv2.HOGDescriptor_getDefaultPeopleDetector() )
-    fgbg = cv2.createBackgroundSubtractorMOG2()
+    video_capture = cv2.VideoCapture(0)
+    body_count = 0
 
 
     with mss.mss() as sct:
@@ -42,12 +44,22 @@ if __name__ == '__main__':
             # Get raw pixels from the screen, save it to a Numpy array
             img = numpy.array(sct.grab(monitor))
             frame = img
-            fgmask = fgbg.apply(frame)
-            frame = cv2.bitwise_and(frame,frame,mask = fgmask)
-            found,w=hog.detectMultiScale(frame, winStride=(8,8), padding=(32,32), scale=1.05)
-            print found
-            draw_detections(frame,found)
-            cv2.imshow('feed',frame)
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            people, confidences = hog.detectMultiScale(gray, winStride=(8,8), padding=(16,16), scale=1.05)
+            # Draw a rectangle around the faces
+            for i in range(len(people)):
+                (x, y, w, h) = people[i]
+                confidence = confidences[i]
+                if confidence > 0:
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+                    body_img = frame[y:y+h, x:x+w]
+                    # cv2.imwrite('body_'+str(body_count)+".jpg",body_img)
+                    body_count += 1
+
+            # Display the resulting frame
+            imS = cv2.resize(frame, (960, 540)) 
+            cv2.imshow('Video', imS)
             # Display the picture
             # cv2.imshow("OpenCV/Numpy normal", cv2.resize(img, (480, 270)))
 
