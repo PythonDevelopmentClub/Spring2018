@@ -5,9 +5,11 @@ inputs = []
 outputs = []
 
 
+# Separate sonar_data.txt into its input data, and classification. 
 for line in file:
 	split_line = line.split(",")
 	inputs += [[float(n) for n in split_line[:-1]] + [1]]
+	print inputs
 	outputs += [float(split_line[-1])]
 
 w = [0.5 for i in range(len(inputs[0]))]
