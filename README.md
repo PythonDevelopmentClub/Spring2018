@@ -50,3 +50,9 @@
  
 ## Week 3 Jan 31 2018
  * We will be creating a Perceptron 
+
+ * What is a perceptron?
+
+ 	Invented by Frank Rosenblatt in 1957, 
+ 	
+ 	[Frank Rosenblatt's paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.335.3398&rep=rep1&type=pdf)
