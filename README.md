@@ -48,11 +48,11 @@
 ## Week 2
  * Today we had a presentation about the Neural Network Program. I don't have much data to put in here now, but eventuall this section will contain some key ideas. 
  
-## Week 3 Jan 31 2018
+## Week 3
  * We will be creating a Perceptron 
 
  * What is a perceptron?
 
- 	Invented by Frank Rosenblatt in 1957, 
+ 	Invented by Frank Rosenblatt in 1957, it is a binary classifer
  	
  	[Frank Rosenblatt's paper](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.335.3398&rep=rep1&type=pdf)
