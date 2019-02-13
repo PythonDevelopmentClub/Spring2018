@@ -112,6 +112,12 @@ class Neural_Network(object):
 						)
 					]
 		return new
+
+		for c in range(0,len(y[0])):
+			new += []
+			for r in range(0, len(y)):
+				arr += [x[r]*y[r][c]]
+			new[-1] += [func(sum(arr))]
 		# new = []
 		# for r in range(len(x)): 
 		# 	new += [func(sum([x[r]*y[r][c] for c in range(0, len(y[0]))]))]
@@ -159,6 +165,9 @@ class Neural_Network(object):
 		# calculate the final error and final change
 		error[-1] = final_error
 		change[-1] = [error[-1][i]*self.sigmoid(self.layers[-1][i],True) for i in range(len(error[-1]))]
+
+		for i in range(len(error[-1])):
+			change[i] = error[-1][i] * self.sigmoid(self.layers[-1][i],True)
 
 		# #print the error
 		# print "error is:", "{0:.5f}".format(abs(sum(error[-1])))
