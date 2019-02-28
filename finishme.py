@@ -59,7 +59,7 @@ def enviro_loop():
 	print("best is:  ", fitness_function(best1, ps), best1)
 	# print "the second best is:  ", fitness_function(best2, ps), best2
 
-	# FINISH ME recombined the two other points
+	# FINISH ME recombined the best functions to create the other ones
 
 
 ps = make_pts([123,-80, 40, 25, 4], [1,4,6,2,3, 20, 10, 15, 17, 18, 19])
@@ -78,6 +78,11 @@ def display():
 	# plt.show()
 
 
+
+for i in range(10000):
+	enviro_loop()
+	# if i % 10 == 0:
+	display()
 
 
 
